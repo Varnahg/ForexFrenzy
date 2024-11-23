@@ -18,3 +18,21 @@ class Rates(models.Model):
 
     def __str__(self):
        return f"{self.currency} ({self.iso}) - {self.bank} on {self.date or 'No Date'}"
+
+# Flag icons table - Rob
+class Flags(models.Model):
+    iso = models.CharField(max_length=3, unique=True)  # ISO code (e.g., USD, EUR)
+    path = models.CharField(max_length=250)  # File path for the flag image
+
+    def __str__(self):
+        return f"{self.iso}: {self.path}"
+
+
+# Provider Type  table - Rob
+class Provider(models.Model):
+    name = models.CharField(max_length=300, unique=True)  # Provider Name
+    type = models.CharField(max_length=15)  # Type - Bank/Exchange Office/Development
+
+    def __str__(self):
+        return f"{self.name}: {self.type}"
+
