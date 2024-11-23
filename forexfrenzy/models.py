@@ -1,9 +1,10 @@
 from django.db import models
 
-# Main table for webscrapping of exchange rates - Rob
+# Main table for webscraping of exchange rates - Rob
 class Rates(models.Model):
     currency = models.CharField(max_length=255)
     iso = models.CharField(max_length=3)
+    amount = models.IntegerField(default=1)  # New column with default value
     dev_buy = models.FloatField()
     dev_sale = models.FloatField()
     dev_mid = models.FloatField()
@@ -13,3 +14,4 @@ class Rates(models.Model):
 
     def __str__(self):
         return f"{self.currency} ({self.iso})"
+
