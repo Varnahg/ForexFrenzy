@@ -9,11 +9,19 @@ from django.shortcuts import render
 def index(request):
     return render(request, 'index.html')
 
-def about(request):
-    return render(request, 'forexfrenzy/about.html')
+def features(request):
+    return render(request, 'forexfrenzy/features.html')
 
 def contact(request):
     return render(request, 'forexfrenzy/contact.html')
+
+def rates(request):
+    return render(request, 'forexfrenzy/rates.html')
+
+def terms(request):
+    return render(request, 'forexfrenzy/terms.html')
+def privacy(request):
+    return render(request, 'forexfrenzy/privacy.html')
 
 def static_chart_view(request):
     # Generování grafu
