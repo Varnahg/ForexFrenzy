@@ -3,7 +3,81 @@ from bs4 import BeautifulSoup
 import pandas as pd
 from datetime import datetime, timedelta
 
-def webscraping(start_date, end_date, banks_list):
+
+# Function to generate a list of dates from start_date to end_date
+def generate_dates(start_date, end_date):
+    dates = []
+    delta = timedelta(days=1)
+    current_date = start_date
+    while current_date <= end_date:
+        dates.append(current_date.strftime('%d.%m.%Y'))
+        current_date += delta
+    return dates
+
+# Function to safely convert text to float
+def safe_float(value):
+    try:
+        return float(value.replace(',', '.').strip())
+    except (ValueError, TypeError, AttributeError):
+        return None
+
+# Function to parse a table row
+def parse_row(row):
+    columns = row.find_all('td')
+    data_length = len(columns)
+
+    # Check if columns are sufficient
+    if data_length < 8:
+        print("Insufficient number of columns:", data_length)
+        return None
+
+    # Common data extraction
+    currency_name = columns[0].get_text(strip=True)
+    currency_code = columns[2].get_text(strip=True)
+    unit_text = columns[3].get_text(strip=True)
+    unit = int(unit_text.replace('&nbsp;', '').strip())
+
+    buy_rate = safe_float(columns[5].get_text(strip=True))
+    sell_rate = safe_float(columns[6].get_text(strip=True))
+    mid_rate = safe_float(columns[7].get_text(strip=True))
+
+    # Initialize cash rates
+    cash_buy_rate = None
+    cash_sell_rate = None
+    cash_mid_rate = None
+
+    # Determine if cash rates are included
+    if data_length >= 13:
+        # Check if cash rates are present
+        if columns[9].get_text(strip=True):
+            cash_buy_rate = safe_float(columns[9].get_text(strip=True))
+        if columns[10].get_text(strip=True):
+            cash_sell_rate = safe_float(columns[10].get_text(strip=True))
+        if columns[11].get_text(strip=True):
+            cash_mid_rate = safe_float(columns[11].get_text(strip=True))
+    elif data_length >= 9:
+        # Cash rates not included
+        pass
+    else:
+        # Handle unexpected number of columns
+        print("Unexpected number of columns:", data_length)
+        return None
+
+    # Compile the data into a list
+    data = [
+        currency_name,  # 0
+        currency_code,  # 1
+        unit,           # 2
+        buy_rate,       # 3
+        sell_rate,      # 4
+        mid_rate,       # 5
+        cash_buy_rate,  # 6
+        cash_sell_rate, # 7
+        cash_mid_rate,  # 8
+    ]
+
+    return data
+def webscrape(start_date, end_date, banks_list):
     """
     Scrape currency exchange rates from specified banks within a date range.
 
@@ -15,80 +89,8 @@ def webscraping(start_date, end_date, banks_list):
     Returns:
     - all_data (DataFrame): A pandas DataFrame containing the scraped data.
     """
+    generate_dates(start_date, end_date)
 
-    # Function to generate a list of dates from start_date to end_date
-    def generate_dates(start_date, end_date):
-        dates = []
-        delta = timedelta(days=1)
-        current_date = start_date
-        while current_date <= end_date:
-            dates.append(current_date.strftime('%d.%m.%Y'))
-            current_date += delta
-        return dates
-
-    # Function to safely convert text to float
-    def safe_float(value):
-        try:
-            return float(value.replace(',', '.').strip())
-        except (ValueError, TypeError, AttributeError):
-            return None
-
-    # Function to parse a table row
-    def parse_row(row):
-        columns = row.find_all('td')
-        data_length = len(columns)
-
-        # Check if columns are sufficient
-        if data_length < 8:
-            print("Insufficient number of columns:", data_length)
-            return None
-
-        # Common data extraction
-        currency_name = columns[0].get_text(strip=True)
-        currency_code = columns[2].get_text(strip=True)
-        unit_text = columns[3].get_text(strip=True)
-        unit = int(unit_text.replace('&nbsp;', '').strip())
-
-        buy_rate = safe_float(columns[5].get_text(strip=True))
-        sell_rate = safe_float(columns[6].get_text(strip=True))
-        mid_rate = safe_float(columns[7].get_text(strip=True))
-
-        # Initialize cash rates
-        cash_buy_rate = None
-        cash_sell_rate = None
-        cash_mid_rate = None
-
-        # Determine if cash rates are included
-        if data_length >= 13:
-            # Check if cash rates are present
-            if columns[9].get_text(strip=True):
-                cash_buy_rate = safe_float(columns[9].get_text(strip=True))
-            if columns[10].get_text(strip=True):
-                cash_sell_rate = safe_float(columns[10].get_text(strip=True))
-            if columns[11].get_text(strip=True):
-                cash_mid_rate = safe_float(columns[11].get_text(strip=True))
-        elif data_length >= 9:
-            # Cash rates not included
-            pass
-        else:
-            # Handle unexpected number of columns
-            print("Unexpected number of columns:", data_length)
-            return None
-
-        # Compile the data into a list
-        data = [
-            currency_name,  # 0
-            currency_code,  # 1
-            unit,           # 2
-            buy_rate,       # 3
-            sell_rate,      # 4
-            mid_rate,       # 5
-            cash_buy_rate,  # 6
-            cash_sell_rate, # 7
-            cash_mid_rate,  # 8
-        ]
-
-        return data
 
     # Generate the list of dates
     date_list = generate_dates(start_date, end_date)
@@ -191,4 +193,4 @@ if __name__ == "__main__":
     ]
 
     # Call the webscraping function
-    data = webscraping(start_date, end_date, banks_list)
+    data = webscrape(start_date, end_date, banks_list)

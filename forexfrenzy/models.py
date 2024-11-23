@@ -3,7 +3,7 @@ from django.db import models
 from django.db.utils import IntegrityError
 import pandas as pd  # Add this import at the top
 
-from ForexFProject.scraper.webscraping import webscraping  # Import the scraping function
+from ForexFProject.scraper.webscraping import webscrape  # Import the scraping function
 
 # Main table for webscraping of exchange rates - Rob
 class Rates(models.Model):
